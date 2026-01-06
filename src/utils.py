@@ -1,9 +1,7 @@
 """Utility functions for Fitbit data extraction."""
 
-import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import List, Tuple
 
 
 def ensure_data_dir(subdir: str = None) -> Path:
@@ -19,9 +17,7 @@ def ensure_data_dir(subdir: str = None) -> Path:
     return full_path
 
 
-def get_date_ranges(
-    start_date: str, end_date: str, chunk_days: int = 90
-) -> List[Tuple[str, str]]:
+def get_date_ranges(start_date: str, end_date: str, chunk_days: int = 90) -> list[tuple[str, str]]:
     """
     Split a date range into chunks for pagination.
 
@@ -47,7 +43,7 @@ def get_date_ranges(
     return ranges
 
 
-def get_date_list(start_date: str, end_date: str) -> List[str]:
+def get_date_list(start_date: str, end_date: str) -> list[str]:
     """
     Get list of all dates between start and end (inclusive).
 

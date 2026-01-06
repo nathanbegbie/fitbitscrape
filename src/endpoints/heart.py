@@ -6,9 +6,7 @@ from ..fetcher import FitbitFetcher
 from ..utils import get_date_list, get_date_ranges
 
 
-def fetch_heart_rate_time_series(
-    fetcher: FitbitFetcher, start_date: str, end_date: str
-) -> None:
+def fetch_heart_rate_time_series(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
     """
     Fetch daily heart rate time series.
 
@@ -41,9 +39,7 @@ def fetch_heart_rate_time_series(
             print(f"✓ Heart rate {marker} fetched")
 
 
-def fetch_heart_rate_intraday(
-    fetcher: FitbitFetcher, start_date: str, end_date: str
-) -> None:
+def fetch_heart_rate_intraday(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
     """
     Fetch intraday heart rate data (second/minute level).
     WARNING: Very request-intensive (1 request per day).

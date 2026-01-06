@@ -50,17 +50,13 @@ def authenticate():
         click.echo("Tokens saved to .env file")
     except Exception as e:
         click.echo(f"\n✗ Authentication failed: {e}", err=True)
-        raise click.Abort()
+        raise click.Abort() from e
 
 
 @cli.command()
-@click.option(
-    "--start-date", default=None, help="Start date (YYYY-MM-DD). Default: 90 days ago"
-)
+@click.option("--start-date", default=None, help="Start date (YYYY-MM-DD). Default: 90 days ago")
 @click.option("--end-date", default=None, help="End date (YYYY-MM-DD). Default: today")
-@click.option(
-    "--include-intraday", is_flag=True, help="Include intraday data (very slow)"
-)
+@click.option("--include-intraday", is_flag=True, help="Include intraday data (very slow)")
 def fetch_all(start_date, end_date, include_intraday):
     """Fetch all available Fitbit data."""
     fetcher = FitbitFetcher()
@@ -70,7 +66,7 @@ def fetch_all(start_date, end_date, include_intraday):
     except ValueError as e:
         click.echo(f"✗ {e}", err=True)
         click.echo("Run: python main.py authenticate", err=True)
-        raise click.Abort()
+        raise click.Abort() from e
 
     # Default date range: last 90 days
     if not start_date:
@@ -114,9 +110,9 @@ def fetch_all(start_date, end_date, include_intraday):
     # Final status
     click.echo("\n" + "=" * 50)
     status = fetcher.get_rate_limit_status()
-    click.echo(f"✓ Data extraction complete!")
+    click.echo("✓ Data extraction complete!")
     click.echo(f"Requests used: {status['request_count']}/{status['max_per_hour']}")
-    click.echo(f"Data saved to: ./data/")
+    click.echo("Data saved to: ./data/")
     click.echo("=" * 50)
 
 
@@ -157,17 +153,15 @@ def status():
 
     try:
         fetcher.initialize()
-    except ValueError:
+    except ValueError as e:
         click.echo("Not authenticated", err=True)
-        raise click.Abort()
+        raise click.Abort() from e
 
     status = fetcher.get_rate_limit_status()
 
     click.echo("Rate Limit Status")
     click.echo("=" * 50)
-    click.echo(
-        f"Requests used this hour: {status['request_count']}/{status['max_per_hour']}"
-    )
+    click.echo(f"Requests used this hour: {status['request_count']}/{status['max_per_hour']}")
     click.echo(f"Remaining requests: {status['remaining']}")
     click.echo(f"Resets in: {status['seconds_until_reset']} seconds")
 

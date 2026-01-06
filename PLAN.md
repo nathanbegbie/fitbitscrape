@@ -116,7 +116,7 @@ Many endpoints support date ranges:
 #### Rate Limit Management
 - Track requests in memory + persist to disk
 - Before each request: check if under limit
-- If at 145 requests: 
+- If at 145 requests:
   - Save state
   - Calculate time until next hour
   - Sleep/wait or exit (user can resume later)

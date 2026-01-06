@@ -2,8 +2,6 @@
 
 import json
 from datetime import datetime
-from pathlib import Path
-from typing import Optional
 
 from .utils import ensure_data_dir, format_iso_datetime
 
@@ -67,7 +65,7 @@ class StateManager:
                 "updated_at": format_iso_datetime(datetime.utcnow()),
             }
 
-        with open(self.rate_limit_file, "r") as f:
+        with open(self.rate_limit_file) as f:
             return json.load(f)
 
     def update_rate_limit_state(self, hour_timestamp: int, request_count: int) -> None:

@@ -6,9 +6,7 @@ from ..fetcher import FitbitFetcher
 from ..utils import get_date_list, get_date_ranges
 
 
-def fetch_activity_summary(
-    fetcher: FitbitFetcher, start_date: str, end_date: str
-) -> None:
+def fetch_activity_summary(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
     """
     Fetch daily activity summaries for date range.
 
@@ -42,9 +40,7 @@ def fetch_activity_summary(
             print(f"✓ Activity summary {marker} fetched")
 
 
-def fetch_activity_intraday_steps(
-    fetcher: FitbitFetcher, start_date: str, end_date: str
-) -> None:
+def fetch_activity_intraday_steps(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
     """
     Fetch intraday steps data (minute-by-minute).
     WARNING: Very request-intensive (1 request per day).

@@ -66,9 +66,7 @@ def fetch_sleep_goal(fetcher: FitbitFetcher) -> bool:
     return success
 
 
-def fetch_all_sleep_data(
-    fetcher: FitbitFetcher, start_date: str, end_date: str
-) -> None:
+def fetch_all_sleep_data(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
     """
     Fetch all sleep data.
 

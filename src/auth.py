@@ -49,9 +49,7 @@ class FitbitAuth:
         self.env_file = Path(".env")
 
         if not self.client_id or not self.client_secret:
-            raise ValueError(
-                "FITBIT_CLIENT_ID and FITBIT_CLIENT_SECRET must be set in .env file"
-            )
+            raise ValueError("FITBIT_CLIENT_ID and FITBIT_CLIENT_SECRET must be set in .env file")
 
     def is_authenticated(self) -> bool:
         """Check if we have valid tokens."""
@@ -64,9 +62,7 @@ class FitbitAuth:
         Returns:
             Tuple of (authorization_url, state)
         """
-        oauth = OAuth2Session(
-            self.client_id, redirect_uri=self.redirect_uri, scope=self.SCOPES
-        )
+        oauth = OAuth2Session(self.client_id, redirect_uri=self.redirect_uri, scope=self.SCOPES)
         authorization_url, state = oauth.authorization_url(self.AUTHORIZATION_BASE_URL)
         return authorization_url, state
 
@@ -80,9 +76,7 @@ class FitbitAuth:
         Returns:
             Token dictionary
         """
-        oauth = OAuth2Session(
-            self.client_id, redirect_uri=self.redirect_uri, scope=self.SCOPES
-        )
+        oauth = OAuth2Session(self.client_id, redirect_uri=self.redirect_uri, scope=self.SCOPES)
 
         token = oauth.fetch_token(
             self.TOKEN_URL,
@@ -116,9 +110,7 @@ class FitbitAuth:
         if not self.refresh_token:
             raise ValueError("No refresh token available")
 
-        oauth = OAuth2Session(
-            self.client_id, token={"refresh_token": self.refresh_token}
-        )
+        oauth = OAuth2Session(self.client_id, token={"refresh_token": self.refresh_token})
 
         token = oauth.refresh_token(
             self.TOKEN_URL,

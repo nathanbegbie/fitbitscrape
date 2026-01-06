@@ -2,7 +2,6 @@
 
 import time
 from datetime import datetime
-from typing import Optional
 
 from .state import StateManager
 
@@ -48,9 +47,7 @@ class RateLimiter:
 
     def _save_state(self) -> None:
         """Save rate limit state to disk."""
-        self.state.update_rate_limit_state(
-            self.current_hour_timestamp, self.request_count
-        )
+        self.state.update_rate_limit_state(self.current_hour_timestamp, self.request_count)
 
     def can_make_request(self) -> bool:
         """
@@ -90,7 +87,7 @@ class RateLimiter:
         now = int(datetime.utcnow().timestamp())
         return max(0, next_hour - now)
 
-    def wait_if_needed(self) -> Optional[int]:
+    def wait_if_needed(self) -> int | None:
         """
         Wait if we're at the rate limit.
 
@@ -99,9 +96,7 @@ class RateLimiter:
         """
         if not self.can_make_request():
             wait_seconds = self.get_seconds_until_reset()
-            print(
-                f"\nRate limit reached ({self.request_count}/{self.MAX_REQUESTS_PER_HOUR})"
-            )
+            print(f"\nRate limit reached ({self.request_count}/{self.MAX_REQUESTS_PER_HOUR})")
             print(f"Waiting {wait_seconds} seconds until next hour...")
             time.sleep(wait_seconds + 5)  # Add 5 seconds buffer
             self._check_hour_reset()  # Force reset check

@@ -1,7 +1,7 @@
 """Core API fetcher with rate limiting and error handling."""
 
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 from requests.exceptions import RequestException
 
@@ -31,9 +31,7 @@ class FitbitFetcher:
 
         self.session = self.auth.get_session()
 
-    def _make_request(
-        self, endpoint: str, max_retries: int = 3
-    ) -> Optional[Dict[Any, Any]]:
+    def _make_request(self, endpoint: str, max_retries: int = 3) -> dict[Any, Any] | None:
         """
         Make an API request with rate limiting and retry logic.
 

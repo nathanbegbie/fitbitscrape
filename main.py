@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fitbit data extraction CLI."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import click
 
@@ -54,7 +54,7 @@ def authenticate():
 
 
 @cli.command()
-@click.option("--start-date", default=None, help="Start date (YYYY-MM-DD). Default: 90 days ago")
+@click.option("--start-date", default=None, help="Start date (YYYY-MM-DD). Default: 2015-01-01")
 @click.option("--end-date", default=None, help="End date (YYYY-MM-DD). Default: today")
 @click.option("--include-intraday", is_flag=True, help="Include intraday data (very slow)")
 def fetch_all(start_date, end_date, include_intraday):
@@ -68,9 +68,9 @@ def fetch_all(start_date, end_date, include_intraday):
         click.echo("Run: python main.py authenticate", err=True)
         raise click.Abort() from e
 
-    # Default date range: last 90 days
+    # Default date range: from 2015-01-01 to today
     if not start_date:
-        start_date = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
+        start_date = "2015-01-01"
     if not end_date:
         end_date = datetime.now().strftime("%Y-%m-%d")
 

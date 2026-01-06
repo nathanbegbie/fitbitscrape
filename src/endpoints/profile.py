@@ -10,20 +10,15 @@ def fetch_profile(fetcher: FitbitFetcher) -> bool:
     Returns:
         True if successful
     """
-    if fetcher.state.is_completed("profile"):
+    if fetcher.state.is_completed("profile", "user"):
         print("✓ Profile already fetched")
         return True
 
     print("Fetching user profile...")
-    success = fetcher.fetch_and_save(
-        endpoint="/user/-/profile.json",
-        category="profile",
-        filename="user.json",
-        skip_if_exists=False,
-    )
+    success = fetcher.fetch_and_save_profile("user", "/user/-/profile.json")
 
     if success:
-        fetcher.state.mark_completed("profile")
+        fetcher.state.mark_completed("profile", "user")
         print("✓ Profile fetched")
 
     return success
@@ -41,12 +36,7 @@ def fetch_devices(fetcher: FitbitFetcher) -> bool:
         return True
 
     print("Fetching devices...")
-    success = fetcher.fetch_and_save(
-        endpoint="/user/-/devices.json",
-        category="profile",
-        filename="devices.json",
-        skip_if_exists=False,
-    )
+    success = fetcher.fetch_and_save_profile("devices", "/user/-/devices.json")
 
     if success:
         fetcher.state.mark_completed("profile", "devices")

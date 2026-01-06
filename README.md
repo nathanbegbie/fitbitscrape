@@ -7,7 +7,7 @@ Extract all your data from Fitbit using their Web API. Handles rate limiting (15
 - **OAuth 2.0 Authentication** - Secure token-based authentication
 - **Rate Limit Management** - Automatic handling of 150 requests/hour limit
 - **Resumable Downloads** - Stop and resume anytime without losing progress
-- **File-based State** - Simple, transparent progress tracking with marker files
+- **SQLite Storage** - All data and progress stored in a single database file
 - **Comprehensive Data** - Profile, activity, sleep, heart rate, and more
 
 ## Quick Start
@@ -104,34 +104,31 @@ uv run python main.py status
 ### Rate Limiting
 
 Fitbit allows 150 API requests per hour. The tool:
-- Tracks requests in `data/.rate_limit_state.json`
+- Tracks requests in SQLite database
 - Automatically waits when limit is reached
 - Resumes after the hour resets
 
 ### Resumability
 
-Progress is tracked using marker files:
-- `data/profile/.completed` - Profile data fetched
-- `data/activity/.completed_2020-01-01_to_2020-03-31` - Date range fetched
+Progress is tracked in the SQLite database:
+- Each fetch operation is recorded with date ranges
 - If interrupted, just run the same command again - it picks up where it left off
+- No duplicate data fetching
 
 ### Data Storage
 
-All data saved to `data/` directory:
-```
-data/
-├── .rate_limit_state.json    # Rate limit tracking
-├── .errors.log               # Error log
-├── profile/
-│   ├── user.json
-│   └── devices.json
-├── activity/
-│   ├── summary_2020-01-01_to_2020-03-31.json
-│   └── ...
-├── sleep/
-├── heart/
-└── ...
-```
+All data saved to `fitbit_data.db` SQLite database:
+
+**Tables:**
+- `activity_data` - Steps, calories, distance, floors, etc. (time series)
+- `sleep_data` - Sleep logs and stages
+- `heart_data` - Heart rate time series
+- `profile_data` - User profile and devices
+- `fetch_progress` - Tracks completed fetch operations
+- `rate_limit_state` - Rate limiting state
+- `api_errors` - Error log
+
+Query your data with any SQLite tool or Python's sqlite3 module.
 
 ## Data Types Fetched
 
@@ -161,7 +158,10 @@ The script handles this automatically by waiting. Just let it run.
 The script auto-refreshes tokens. If that fails, re-run `uv run python main.py authenticate`.
 
 ### Missing data
-Check `data/.errors.log` for API errors.
+Check the `api_errors` table in the database for API errors:
+```bash
+sqlite3 fitbit_data.db "SELECT * FROM api_errors ORDER BY occurred_at DESC LIMIT 10"
+```
 
 ## Development
 

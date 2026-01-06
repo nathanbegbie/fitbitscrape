@@ -96,29 +96,82 @@ class FitbitFetcher:
 
         return None
 
-    def fetch_and_save(
-        self, endpoint: str, category: str, filename: str, skip_if_exists: bool = True
-    ) -> bool:
+    def fetch_and_save_activity(self, resource: str, start_date: str, end_date: str) -> bool:
         """
-        Fetch data and save to file.
+        Fetch activity data and save to database.
 
         Args:
-            endpoint: API endpoint path
-            category: Data category for storage
-            filename: Filename to save as
-            skip_if_exists: Skip if file already exists
+            resource: Activity resource (e.g., 'steps', 'calories')
+            start_date: Start date in YYYY-MM-DD format
+            end_date: End date in YYYY-MM-DD format
 
         Returns:
-            True if successful, False otherwise
+            True if successful
         """
-        # Check if already downloaded
-        if skip_if_exists and self.state.data_exists(category, filename):
-            return True
-
+        endpoint = f"/user/-/activities/{resource}/date/{start_date}/{end_date}.json"
         data = self._make_request(endpoint)
 
         if data:
-            self.state.save_data(category, filename, data)
+            self.state.save_activity_data(resource, data)
+            return True
+
+        return False
+
+    def fetch_and_save_sleep(self, start_date: str, end_date: str) -> bool:
+        """
+        Fetch sleep data and save to database.
+
+        Args:
+            start_date: Start date in YYYY-MM-DD format
+            end_date: End date in YYYY-MM-DD format
+
+        Returns:
+            True if successful
+        """
+        endpoint = f"/user/-/sleep/date/{start_date}/{end_date}.json"
+        data = self._make_request(endpoint)
+
+        if data:
+            self.state.save_sleep_data(data)
+            return True
+
+        return False
+
+    def fetch_and_save_heart(self, start_date: str, end_date: str) -> bool:
+        """
+        Fetch heart rate data and save to database.
+
+        Args:
+            start_date: Start date in YYYY-MM-DD format
+            end_date: End date in YYYY-MM-DD format
+
+        Returns:
+            True if successful
+        """
+        endpoint = f"/user/-/activities/heart/date/{start_date}/{end_date}.json"
+        data = self._make_request(endpoint)
+
+        if data:
+            self.state.save_heart_data(data)
+            return True
+
+        return False
+
+    def fetch_and_save_profile(self, data_type: str, endpoint: str) -> bool:
+        """
+        Fetch profile data and save to database.
+
+        Args:
+            data_type: Type of profile data (e.g., 'user', 'devices')
+            endpoint: API endpoint
+
+        Returns:
+            True if successful
+        """
+        data = self._make_request(endpoint)
+
+        if data:
+            self.state.save_profile_data(data_type, data)
             return True
 
         return False

@@ -32,28 +32,20 @@ def fetch_activity_time_series(
         start_date: Start date in YYYY-MM-DD format
         end_date: End date in YYYY-MM-DD format
     """
-    # Split into 90-day chunks (staying well under the typical 1095-day max)
+    # Split into 90-day chunks
     date_ranges = get_date_ranges(start_date, end_date, chunk_days=90)
 
     for range_start, range_end in date_ranges:
-        marker = f"{resource}_{range_start}_to_{range_end}"
-
-        if fetcher.state.is_completed("activity", marker):
+        if fetcher.state.is_completed("activity", resource, range_start, range_end):
             print(f"✓ Activity {resource} {range_start} to {range_end} already fetched")
             continue
 
         print(f"Fetching activity {resource} {range_start} to {range_end}...")
-        endpoint = f"/user/-/activities/{resource}/date/{range_start}/{range_end}.json"
 
-        success = fetcher.fetch_and_save(
-            endpoint=endpoint,
-            category="activity",
-            filename=f"{resource}_{range_start}_to_{range_end}.json",
-            skip_if_exists=False,
-        )
+        success = fetcher.fetch_and_save_activity(resource, range_start, range_end)
 
         if success:
-            fetcher.state.mark_completed("activity", marker)
+            fetcher.state.mark_completed("activity", resource, range_start, range_end)
             print(f"✓ Activity {resource} {range_start} to {range_end} fetched")
 
 

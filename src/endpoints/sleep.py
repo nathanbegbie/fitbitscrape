@@ -19,51 +19,17 @@ def fetch_sleep_logs(fetcher: FitbitFetcher, start_date: str, end_date: str) -> 
     date_ranges = get_date_ranges(start_date, end_date, chunk_days=100)
 
     for range_start, range_end in date_ranges:
-        marker = f"{range_start}_to_{range_end}"
-
-        if fetcher.state.is_completed("sleep", marker):
-            print(f"✓ Sleep logs {marker} already fetched")
+        if fetcher.state.is_completed("sleep", None, range_start, range_end):
+            print(f"✓ Sleep logs {range_start} to {range_end} already fetched")
             continue
 
-        print(f"Fetching sleep logs {marker}...")
-        endpoint = f"/user/-/sleep/date/{range_start}/{range_end}.json"
+        print(f"Fetching sleep logs {range_start} to {range_end}...")
 
-        success = fetcher.fetch_and_save(
-            endpoint=endpoint,
-            category="sleep",
-            filename=f"sleep_{marker}.json",
-            skip_if_exists=False,
-        )
+        success = fetcher.fetch_and_save_sleep(range_start, range_end)
 
         if success:
-            fetcher.state.mark_completed("sleep", marker)
-            print(f"✓ Sleep logs {marker} fetched")
-
-
-def fetch_sleep_goal(fetcher: FitbitFetcher) -> bool:
-    """
-    Fetch sleep goal.
-
-    Returns:
-        True if successful
-    """
-    if fetcher.state.is_completed("sleep", "goal"):
-        print("✓ Sleep goal already fetched")
-        return True
-
-    print("Fetching sleep goal...")
-    success = fetcher.fetch_and_save(
-        endpoint="/user/-/sleep/goal.json",
-        category="sleep",
-        filename="goal.json",
-        skip_if_exists=False,
-    )
-
-    if success:
-        fetcher.state.mark_completed("sleep", "goal")
-        print("✓ Sleep goal fetched")
-
-    return success
+            fetcher.state.mark_completed("sleep", None, range_start, range_end)
+            print(f"✓ Sleep logs {range_start} to {range_end} fetched")
 
 
 def fetch_all_sleep_data(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
@@ -78,5 +44,4 @@ def fetch_all_sleep_data(fetcher: FitbitFetcher, start_date: str, end_date: str)
     if not end_date:
         end_date = datetime.now().strftime("%Y-%m-%d")
 
-    fetch_sleep_goal(fetcher)
     fetch_sleep_logs(fetcher, start_date, end_date)

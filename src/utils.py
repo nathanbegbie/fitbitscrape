@@ -1,20 +1,6 @@
 """Utility functions for Fitbit data extraction."""
 
 from datetime import datetime, timedelta
-from pathlib import Path
-
-
-def ensure_data_dir(subdir: str = None) -> Path:
-    """Ensure data directory exists and return path."""
-    base_dir = Path("data")
-
-    if subdir:
-        full_path = base_dir / subdir
-    else:
-        full_path = base_dir
-
-    full_path.mkdir(parents=True, exist_ok=True)
-    return full_path
 
 
 def get_date_ranges(start_date: str, end_date: str, chunk_days: int = 90) -> list[tuple[str, str]]:
@@ -65,13 +51,3 @@ def get_date_list(start_date: str, end_date: str) -> list[str]:
         current += timedelta(days=1)
 
     return dates
-
-
-def parse_iso_datetime(iso_string: str) -> datetime:
-    """Parse ISO format datetime string."""
-    return datetime.fromisoformat(iso_string.replace("Z", "+00:00"))
-
-
-def format_iso_datetime(dt: datetime) -> str:
-    """Format datetime as ISO string."""
-    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")

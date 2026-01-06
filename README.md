@@ -27,16 +27,19 @@ uv pip install -e .
 1. Go to https://dev.fitbit.com/apps
 2. Click "Register a New App"
 3. Fill in the form:
-   - **Application Name**: "My Data Export" (or any name)
+   - **Application Name**: "GetMyData" (or any name you prefer)
    - **Description**: "Personal data export"
-   - **Application Website**: http://localhost:8080/
+   - **Application Website URL**: http://localhost:8080/
    - **Organization**: Your name
-   - **Organization Website**: http://localhost:8080/
+   - **Organization Website URL**: http://localhost:8080/
+   - **Terms of Service URL**: http://localhost:8080/
+   - **Privacy Policy URL**: http://localhost:8080/
    - **OAuth 2.0 Application Type**: **Personal**
    - **Redirect URL**: http://localhost:8080/
-   - **Default Access Type**: Read-Only
-4. Agree to terms and click "Register"
-5. Copy your **OAuth 2.0 Client ID** and **Client Secret**
+   - **Default Access Type**: **Read Only**
+4. Check "I have read and agree to the terms of service"
+5. Click "Register"
+6. Copy your **OAuth 2.0 Client ID** and **Client Secret**
 
 ### 3. Configure Credentials
 
@@ -44,9 +47,9 @@ uv pip install -e .
 # Copy the example env file
 cp .env.example .env
 
-# Edit .env and add your credentials
-# FITBIT_CLIENT_ID=your_client_id_here
-# FITBIT_CLIENT_SECRET=your_client_secret_here
+# Edit .env and add your credentials:
+# - Copy the "OAuth 2.0 Client ID" value to FITBIT_CLIENT_ID
+# - Copy the "Client Secret" value to FITBIT_CLIENT_SECRET
 ```
 
 ### 4. Authenticate

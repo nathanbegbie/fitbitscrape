@@ -1,7 +1,9 @@
 """Rate limiter for Fitbit API (150 requests per hour)."""
 
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+
+import humanize
 
 from .state import StateManager
 
@@ -96,8 +98,9 @@ class RateLimiter:
         """
         if not self.can_make_request():
             wait_seconds = self.get_seconds_until_reset()
+            wait_time = humanize.naturaldelta(timedelta(seconds=wait_seconds))
             print(f"\nRate limit reached ({self.request_count}/{self.MAX_REQUESTS_PER_HOUR})")
-            print(f"Waiting {wait_seconds} seconds until next hour...")
+            print(f"Waiting {wait_time} until next hour...")
             time.sleep(wait_seconds + 5)  # Add 5 seconds buffer
             self._check_hour_reset()  # Force reset check
             return wait_seconds

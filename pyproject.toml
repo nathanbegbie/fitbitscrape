@@ -9,6 +9,7 @@ dependencies = [
     "requests>=2.32.5",
     "requests-oauthlib>=2.0.0",
     "click>=8.1.7",
+    "humanize>=4.11.0",
 ]
 
 [project.optional-dependencies]

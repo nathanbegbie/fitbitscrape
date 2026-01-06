@@ -61,18 +61,17 @@ uv run python main.py authenticate
 
 Follow the instructions to authorize the app in your browser.
 
-### 5. Fetch Data
+### 5. Download Your Data
 
 ```bash
-# Fetch last 90 days of data (default)
-uv run python main.py fetch-all
+# Download all data from 2015-01-01 to today (default)
+uv run python main.py download
 
-# Fetch custom date range
-uv run python main.py fetch-all --start-date 2020-01-01 --end-date 2024-12-31
-
-# Include intraday data (WARNING: very slow, many requests)
-uv run python main.py fetch-all --start-date 2024-01-01 --include-intraday
+# Download custom date range
+uv run python main.py download --start-date 2020-01-01 --end-date 2024-12-31
 ```
+
+The download command automatically fetches all available data types and tracks progress, so you can stop and resume anytime.
 
 ## Usage
 
@@ -82,22 +81,17 @@ uv run python main.py fetch-all --start-date 2024-01-01 --include-intraday
 # Authenticate with Fitbit
 uv run python main.py authenticate
 
-# Fetch all data types
-uv run python main.py fetch-all [OPTIONS]
+# Download all available data
+uv run python main.py download [OPTIONS]
 
-# Fetch specific data types
-uv run python main.py fetch-profile
-uv run python main.py fetch-activity --start-date 2020-01-01
-
-# Check rate limit status
+# Check rate limit and database status
 uv run python main.py status
 ```
 
 ### Options
 
-- `--start-date YYYY-MM-DD` - Start date for data fetch
-- `--end-date YYYY-MM-DD` - End date for data fetch (defaults to today)
-- `--include-intraday` - Include minute/second-level data (very slow)
+- `--start-date YYYY-MM-DD` - Start date for download (default: 2015-01-01)
+- `--end-date YYYY-MM-DD` - End date for download (default: today)
 
 ## How It Works
 
@@ -140,11 +134,14 @@ Query your data with any SQLite tool or Python's sqlite3 module.
 
 ## Estimated Time
 
-For a user with 3 years of data:
-- **Without intraday**: ~100 requests (~40 minutes or less)
-- **With intraday**: ~3,300 requests (~22 hours, can be spread over days)
+For a user with 10 years of data (2015-2025):
+- **Activity metrics** (10 resources × ~40 requests): ~400 requests
+- **Sleep**: ~40 requests
+- **Heart rate**: ~40 requests
+- **Profile**: ~2 requests
+- **Total**: ~480 requests (~3.2 hours at 150 requests/hour)
 
-The script can be stopped and resumed at any time.
+The script can be stopped and resumed at any time. Already downloaded data won't be re-fetched.
 
 ## Troubleshooting
 

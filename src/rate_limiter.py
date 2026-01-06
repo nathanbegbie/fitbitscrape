@@ -1,7 +1,7 @@
 """Rate limiter for Fitbit API (150 requests per hour)."""
 
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 
 from .state import StateManager
 
@@ -25,7 +25,7 @@ class RateLimiter:
 
     def _get_hour_timestamp(self) -> int:
         """Get Unix timestamp for the start of current hour."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         hour_start = now.replace(minute=0, second=0, microsecond=0)
         return int(hour_start.timestamp())
 
@@ -84,7 +84,7 @@ class RateLimiter:
         """Get seconds until rate limit resets (start of next hour)."""
         current_hour = self._get_hour_timestamp()
         next_hour = current_hour + 3600  # Add 1 hour in seconds
-        now = int(datetime.utcnow().timestamp())
+        now = int(datetime.now(UTC).timestamp())
         return max(0, next_hour - now)
 
     def wait_if_needed(self) -> int | None:

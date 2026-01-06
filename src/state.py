@@ -2,7 +2,7 @@
 
 import json
 import sqlite3
-from datetime import datetime
+from datetime import UTC, datetime
 
 
 class StateManager:
@@ -162,7 +162,7 @@ class StateManager:
                 return {
                     "hour_timestamp": 0,
                     "request_count": 0,
-                    "updated_at": datetime.utcnow().isoformat(),
+                    "updated_at": datetime.now(UTC).isoformat(),
                 }
 
     def update_rate_limit_state(self, hour_timestamp: int, request_count: int) -> None:

@@ -6,6 +6,9 @@ from pathlib import Path
 from dotenv import load_dotenv, set_key
 from requests_oauthlib import OAuth2Session
 
+# Allow OAuth over HTTP for localhost (development only)
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 
 class FitbitAuth:
     """

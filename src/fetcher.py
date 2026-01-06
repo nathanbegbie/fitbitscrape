@@ -30,6 +30,7 @@ class FitbitFetcher:
             raise ValueError("Not authenticated. Run: python main.py --authenticate")
 
         self.session = self.auth.get_session()
+
     def _make_request(
         self, endpoint: str, max_retries: int = 3
     ) -> Optional[Dict[Any, Any]]:
@@ -100,7 +101,6 @@ class FitbitFetcher:
     def fetch_and_save(
         self, endpoint: str, category: str, filename: str, skip_if_exists: bool = True
     ) -> bool:
-                      skip_if_exists: bool = True) -> bool:
         """
         Fetch data and save to file.
 

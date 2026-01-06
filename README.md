@@ -16,10 +16,11 @@ Extract all your data from Fitbit using their Web API. Handles rate limiting (15
 
 ```bash
 # Install uv if you haven't already
-pip install uv
+# See: https://docs.astral.sh/uv/getting-started/installation/
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install project dependencies
-uv pip install -e .
+uv sync
 ```
 
 ### 2. Register a Fitbit App
@@ -55,7 +56,7 @@ cp .env.example .env
 ### 4. Authenticate
 
 ```bash
-python main.py authenticate
+uv run python main.py authenticate
 ```
 
 Follow the instructions to authorize the app in your browser.
@@ -64,13 +65,13 @@ Follow the instructions to authorize the app in your browser.
 
 ```bash
 # Fetch last 90 days of data (default)
-python main.py fetch-all
+uv run python main.py fetch-all
 
 # Fetch custom date range
-python main.py fetch-all --start-date 2020-01-01 --end-date 2024-12-31
+uv run python main.py fetch-all --start-date 2020-01-01 --end-date 2024-12-31
 
 # Include intraday data (WARNING: very slow, many requests)
-python main.py fetch-all --start-date 2024-01-01 --include-intraday
+uv run python main.py fetch-all --start-date 2024-01-01 --include-intraday
 ```
 
 ## Usage
@@ -79,17 +80,17 @@ python main.py fetch-all --start-date 2024-01-01 --include-intraday
 
 ```bash
 # Authenticate with Fitbit
-python main.py authenticate
+uv run python main.py authenticate
 
 # Fetch all data types
-python main.py fetch-all [OPTIONS]
+uv run python main.py fetch-all [OPTIONS]
 
 # Fetch specific data types
-python main.py fetch-profile
-python main.py fetch-activity --start-date 2020-01-01
+uv run python main.py fetch-profile
+uv run python main.py fetch-activity --start-date 2020-01-01
 
 # Check rate limit status
-python main.py status
+uv run python main.py status
 ```
 
 ### Options
@@ -151,13 +152,13 @@ The script can be stopped and resumed at any time.
 ## Troubleshooting
 
 ### "Not authenticated" error
-Run `python main.py authenticate` first.
+Run `uv run python main.py authenticate` first.
 
 ### Rate limit errors
 The script handles this automatically by waiting. Just let it run.
 
 ### Token expired
-The script auto-refreshes tokens. If that fails, re-run `python main.py authenticate`.
+The script auto-refreshes tokens. If that fails, re-run `uv run python main.py authenticate`.
 
 ### Missing data
 Check `data/.errors.log` for API errors.

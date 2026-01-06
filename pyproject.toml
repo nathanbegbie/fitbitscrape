@@ -1,10 +1,12 @@
 [project]
 name = "fitbitscrape"
 version = "0.1.0"
-description = "Add your description here"
+description = "Extract all Fitbit user data via Web API with rate limiting and resumability"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
+    "requests-oauthlib>=2.0.0",
+    "click>=8.1.7",
 ]

@@ -75,12 +75,13 @@ Extract all available data for a given Fitbit user through their Web API, handli
 - Wait until hour reset before continuing
 
 #### 3. State Management (Resumability)
-- SQLite database or JSON file to track:
-  - Which endpoints have been fetched
-  - Date ranges completed for time series data
-  - Last successful request timestamp
-  - Current request count for the hour
+- File-based marker system to track:
+  - Which endpoints have been fetched (marker files in data directories)
+  - Date ranges completed for time series data (e.g., `.completed_2020-01-01_to_2020-03-31`)
+  - Rate limit state in JSON file (`data/.rate_limit_state.json`)
+  - Error log file (`data/.errors.log`)
 - Allow script to stop/start without losing progress
+- Simple, transparent, no database needed
 
 #### 4. Data Fetcher
 - Modular endpoint handlers for each data category
@@ -100,7 +101,7 @@ Many endpoints support date ranges:
 - Start from user's account creation date (or specified start date)
 - Fetch in chunks (e.g., 1 month at a time for daily data)
 - For intraday data: fetch day-by-day (1 day per request)
-- Track progress in state database
+- Track progress with marker files in data directories
 
 #### Request Prioritization
 1. **User profile & devices** (1-2 requests)
@@ -125,13 +126,13 @@ Many endpoints support date ranges:
 ```
 fitbitscrape/
 ├── .env                    # API credentials, tokens
-├── .gitignore             # Ignore .env, data/, state.db
+├── .gitignore             # Ignore .env, data/
 ├── pyproject.toml         # Dependencies
 ├── main.py                # Entry point
 ├── src/
 │   ├── auth.py           # OAuth flow, token management
 │   ├── rate_limiter.py   # Rate limiting logic
-│   ├── state.py          # State persistence (SQLite)
+│   ├── state.py          # File-based state persistence
 │   ├── fetcher.py        # Core API fetching logic
 │   ├── endpoints/        # Endpoint-specific handlers
 │   │   ├── activity.py
@@ -141,46 +142,47 @@ fitbitscrape/
 │   │   ├── nutrition.py
 │   │   └── ...
 │   └── utils.py          # Helper functions
-├── data/                  # Downloaded data (gitignored)
-│   ├── profile/
-│   ├── activity/
-│   ├── sleep/
-│   ├── heart/
-│   └── ...
-└── state.db              # Progress tracking database
-
+└── data/                  # Downloaded data (gitignored)
+    ├── .rate_limit_state.json    # Rate limit tracking
+    ├── .errors.log              # Error log
+    ├── profile/
+    │   ├── user.json
+    │   └── .completed           # Marker file
+    ├── activity/
+    │   ├── 2020-01-01.json
+    │   ├── .completed_2020-01-01_to_2020-03-31
+    │   └── ...
+    ├── sleep/
+    ├── heart/
+    └── ...
 ```
 
 ### Dependencies
-- `requests` or `httpx` - HTTP client
+- `requests` - HTTP client
 - `python-dotenv` - Environment variables
-- `sqlite3` (built-in) - State management
-- `oauthlib` or `requests-oauthlib` - OAuth 2.0
-- `tenacity` - Retry logic (optional)
-- `click` or `typer` - CLI interface (optional)
+- `requests-oauthlib` - OAuth 2.0
+- `click` - CLI interface
 
-### State Schema (SQLite)
-```sql
-CREATE TABLE fetch_status (
-    endpoint TEXT PRIMARY KEY,
-    last_completed_date TEXT,
-    status TEXT,  -- 'pending', 'in_progress', 'completed'
-    updated_at TIMESTAMP
-);
+### State File Formats
 
-CREATE TABLE rate_limit_state (
-    hour_timestamp INTEGER PRIMARY KEY,
-    request_count INTEGER,
-    updated_at TIMESTAMP
-);
+#### Rate Limit State (data/.rate_limit_state.json)
+```json
+{
+  "hour_timestamp": 1704564000,
+  "request_count": 47,
+  "updated_at": "2024-01-06T15:23:45Z"
+}
+```
 
-CREATE TABLE api_errors (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    endpoint TEXT,
-    error_type TEXT,
-    error_message TEXT,
-    timestamp TIMESTAMP
-);
+#### Marker Files
+- Empty files indicating completion: `data/profile/.completed`
+- Date range markers: `data/activity/.completed_2020-01-01_to_2020-03-31`
+- Check for existence to determine if data already fetched
+
+#### Error Log (data/.errors.log)
+```
+2024-01-06T15:23:45Z | 429 | /1/user/-/activities/heart/date/2020-01-15.json | Rate limit exceeded
+2024-01-06T16:10:32Z | 500 | /1/user/-/sleep/date/2020-02-10.json | Internal server error
 ```
 
 ## Implementation Phases
@@ -189,7 +191,7 @@ CREATE TABLE api_errors (
 1. Set up project structure
 2. Implement OAuth authentication
 3. Create basic rate limiter
-4. Set up state management (SQLite)
+4. Set up file-based state management
 
 ### Phase 2: Core Fetching
 1. Implement base API client with rate limiting

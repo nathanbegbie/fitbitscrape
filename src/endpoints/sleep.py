@@ -45,3 +45,27 @@ def fetch_all_sleep_data(fetcher: FitbitFetcher, start_date: str, end_date: str)
         end_date = datetime.now().strftime("%Y-%m-%d")
 
     fetch_sleep_logs(fetcher, start_date, end_date)
+
+
+def fetch_sleep_goal(fetcher: FitbitFetcher) -> None:
+    """
+    Fetch sleep goal.
+
+    Args:
+        fetcher: FitbitFetcher instance
+    """
+    if fetcher.state.is_completed("sleep", "goal"):
+        print("✓ Sleep goal already fetched")
+        return
+
+    print("Fetching sleep goal...")
+
+    endpoint = "/user/-/sleep/goal.json"
+    data = fetcher._make_request(endpoint)
+
+    if data:
+        fetcher.state.save_sleep_goal(data)
+        fetcher.state.mark_completed("sleep", "goal")
+        print("✓ Saved sleep goal")
+    else:
+        print("✗ Failed to fetch sleep goal")

@@ -11,88 +11,101 @@ Extract all available data for a given Fitbit user through their Web API, handli
 
 ## Data Categories to Extract
 
-### 1. User Profile & Devices
-- User profile information
-- Paired devices and sync status
+### 1. User Profile & Devices ✅
+- ✅ User profile information
+- ✅ Paired devices and sync status
 
-### 2. Activity Data
-- Daily activity summaries (steps, distance, calories, floors, elevation)
-- Active Zone Minutes time series
-- Activity logs (exercises, workouts)
-- Intraday activity data (minute-by-minute for steps, calories, heart rate, etc.)
-- Lifetime stats
+### 2. Activity Data ✅ (except intraday)
+- ✅ Daily activity summaries (steps, distance, calories, floors, elevation)
+- ✅ Active Zone Minutes time series
+- ✅ Activity logs (exercises, workouts)
+- ⏸️ Intraday activity data (minute-by-minute for steps, calories, heart rate, etc.) - NOT IMPLEMENTED (very request-intensive)
+- ⏸️ Lifetime stats - NOT IMPLEMENTED
 
-### 3. Heart Health
-- Heart rate time series (daily)
-- Heart rate intraday (second/minute level)
-- Heart rate variability (HRV)
-- Resting heart rate
-- Cardio fitness score (VO2 Max)
+### 3. Heart Health ✅
+- ✅ Heart rate time series (daily)
+- ⏸️ Heart rate intraday (second/minute level) - NOT IMPLEMENTED (very request-intensive)
+- ✅ Heart rate variability (HRV)
+- ✅ Resting heart rate (included in daily heart rate time series)
+- ✅ Cardio fitness score (VO2 Max)
 
-### 4. Sleep Data
-- Sleep logs (sleep stages, duration, efficiency)
-- Sleep time series
-- Sleep goal
+### 4. Sleep Data ✅
+- ✅ Sleep logs (sleep stages, duration, efficiency)
+- ⏸️ Sleep time series - NOT IMPLEMENTED (may be redundant with sleep logs)
+- ✅ Sleep goal
 
-### 5. Body Metrics
-- Weight time series
-- Body fat percentage
-- BMI
-- Body goals
+### 5. Body Metrics ✅
+- ✅ Weight time series
+- ✅ Body fat percentage
+- ✅ BMI
+- ✅ Body goals
 
-### 6. Health Metrics
-- SpO2 (blood oxygen) data
-- Breathing rate
-- Skin temperature
-- Core temperature
-- Electrocardiogram (ECG) data if available
+### 6. Health Metrics ✅ (except ECG)
+- ✅ SpO2 (blood oxygen) data
+- ✅ Breathing rate
+- ✅ Skin temperature
+- ✅ Core temperature
+- ⏸️ Electrocardiogram (ECG) data - NOT IMPLEMENTED (may require special device/permissions)
 
-### 7. Nutrition
-- Food logs
-- Water logs
-- Nutrition goals
+### 7. Nutrition ✅
+- ✅ Food logs
+- ✅ Water logs
+- ✅ Nutrition goals
 
-### 8. Blood Glucose
-- Blood glucose logs (if tracked)
+### 8. Blood Glucose ✅
+- ✅ Blood glucose logs (if tracked)
 
-### 9. Other Data
-- Friends/social data
-- Badges and achievements
+### 9. Other Data ✅
+- ✅ Friends/social data
+- ✅ Badges and achievements
 
 ## Technical Architecture
 
 ### Components
 
-#### 1. Authentication Module
-- OAuth 2.0 flow implementation
-- Token storage and refresh
-- Store tokens in `.env` file (using python-dotenv)
+#### 1. Authentication Module ✅
+- ✅ OAuth 2.0 flow implementation
+- ✅ Token storage and refresh (with automatic re-authentication on expiration)
+- ✅ Store tokens in `.env` file (using python-dotenv)
 
-#### 2. Rate Limiter
-- Track requests per hour
-- Implement sliding window or token bucket
-- Auto-pause when approaching limit (e.g., at 145/150)
-- Wait until hour reset before continuing
+#### 2. Rate Limiter ✅
+- ✅ Track requests per hour
+- ✅ Persist state to SQLite database
+- ✅ Wait until hour reset before continuing
+- ✅ Display humanized wait times (e.g., "14 minutes" instead of "875 seconds")
+- ⏸️ Safety margin (145 requests) - NOT IMPLEMENTED (uses full 150)
 
-#### 3. State Management (Resumability)
-- File-based marker system to track:
-  - Which endpoints have been fetched (marker files in data directories)
-  - Date ranges completed for time series data (e.g., `.completed_2020-01-01_to_2020-03-31`)
-  - Rate limit state in JSON file (`data/.rate_limit_state.json`)
-  - Error log file (`data/.errors.log`)
-- Allow script to stop/start without losing progress
-- Simple, transparent, no database needed
+#### 3. State Management (Resumability) ✅
+- ✅ **IMPLEMENTED AS SQLITE** (changed from file-based markers)
+- ✅ Track completed fetch operations in `fetch_progress` table
+- ✅ Store date ranges for time series data
+- ✅ Rate limit state in SQLite
+- ✅ Error logging in `api_errors` table
+- ✅ Allow script to stop/start without losing progress
 
-#### 4. Data Fetcher
-- Modular endpoint handlers for each data category
-- Date range pagination for time series data
-- Retry logic with exponential backoff for 429 errors
-- Error handling and logging
+#### 4. Data Fetcher ✅
+- ✅ Modular endpoint handlers for each data category
+- ✅ Date range pagination for time series data (90-day chunks for activity, 100-day for sleep)
+- ✅ Retry logic with exponential backoff
+- ✅ Error handling and logging
 
-#### 5. Data Storage
-- Store raw JSON responses
-- Organize by data type and date
-- Optional: Transform to CSV/Parquet for analysis
+#### 5. Data Storage ✅
+- ✅ **SQLite database** (fitbit_data.db) with structured tables:
+  - `activity_data` - Activity time series
+  - `sleep_data` - Sleep logs
+  - `heart_data` - Heart rate data
+  - `hrv_data` - Heart rate variability
+  - `body_data` - Weight, fat, BMI
+  - `nutrition_data` - Food and water logs
+  - `health_metrics` - SpO2, breathing, temperature, cardio fitness
+  - `glucose_data` - Blood glucose logs
+  - `activity_logs` - Exercise and workout logs
+  - `social_data` - Friends and badges
+  - `profile_data` - User profile, devices, goals
+  - `fetch_progress` - Resumability tracking
+  - `rate_limit_state` - Rate limiting state
+  - `api_errors` - Error log
+- ⏸️ CSV/Parquet export - NOT IMPLEMENTED
 
 ### Data Fetching Strategy
 
@@ -122,109 +135,94 @@ Many endpoints support date ranges:
   - Sleep/wait or exit (user can resume later)
 - Handle 429 responses gracefully
 
-### File Structure
+### File Structure ✅
 ```
 fitbitscrape/
 ├── .env                    # API credentials, tokens
-├── .gitignore             # Ignore .env, data/
+├── .gitignore             # Ignore .env, fitbit_data.db
 ├── pyproject.toml         # Dependencies
-├── main.py                # Entry point
+├── main.py                # Entry point (CLI)
+├── fitbit_data.db         # SQLite database (auto-created)
 ├── src/
 │   ├── auth.py           # OAuth flow, token management
 │   ├── rate_limiter.py   # Rate limiting logic
-│   ├── state.py          # File-based state persistence
+│   ├── state.py          # SQLite state management
 │   ├── fetcher.py        # Core API fetching logic
+│   ├── download.py       # Download orchestrator
 │   ├── endpoints/        # Endpoint-specific handlers
-│   │   ├── activity.py
-│   │   ├── sleep.py
-│   │   ├── heart.py
-│   │   ├── body.py
-│   │   ├── nutrition.py
-│   │   └── ...
+│   │   ├── activity.py   # Activity metrics and logs
+│   │   ├── sleep.py      # Sleep logs and goal
+│   │   ├── heart.py      # Heart rate and HRV
+│   │   ├── body.py       # Body metrics and goals
+│   │   ├── nutrition.py  # Food/water logs and goals
+│   │   ├── health_metrics.py  # SpO2, breathing, temperature, cardio fitness
+│   │   ├── glucose.py    # Blood glucose logs
+│   │   ├── social.py     # Friends and badges
+│   │   └── profile.py    # User profile and devices
 │   └── utils.py          # Helper functions
-└── data/                  # Downloaded data (gitignored)
-    ├── .rate_limit_state.json    # Rate limit tracking
-    ├── .errors.log              # Error log
-    ├── profile/
-    │   ├── user.json
-    │   └── .completed           # Marker file
-    ├── activity/
-    │   ├── 2020-01-01.json
-    │   ├── .completed_2020-01-01_to_2020-03-31
-    │   └── ...
-    ├── sleep/
-    ├── heart/
-    └── ...
+└── tests/                # pytest test suite
+    ├── test_state.py
+    ├── test_utils.py
+    └── test_activity_resume.py
 ```
 
-### Dependencies
+### Dependencies ✅
 - `requests` - HTTP client
 - `python-dotenv` - Environment variables
 - `requests-oauthlib` - OAuth 2.0
 - `click` - CLI interface
+- `humanize` - Human-readable time formatting
+- Dev dependencies: `ruff`, `pytest`, `pytest-mock`, `pre-commit`
 
-### State File Formats
+### Data Storage (SQLite) ✅
 
-#### Rate Limit State (data/.rate_limit_state.json)
-```json
-{
-  "hour_timestamp": 1704564000,
-  "request_count": 47,
-  "updated_at": "2024-01-06T15:23:45Z"
-}
+All data stored in `fitbit_data.db` SQLite database. Query with any SQLite tool:
+```bash
+sqlite3 fitbit_data.db "SELECT * FROM activity_data WHERE resource='steps' LIMIT 10"
 ```
 
-#### Marker Files
-- Empty files indicating completion: `data/profile/.completed`
-- Date range markers: `data/activity/.completed_2020-01-01_to_2020-03-31`
-- Check for existence to determine if data already fetched
+## Implementation Phases ✅
 
-#### Error Log (data/.errors.log)
-```
-2024-01-06T15:23:45Z | 429 | /1/user/-/activities/heart/date/2020-01-15.json | Rate limit exceeded
-2024-01-06T16:10:32Z | 500 | /1/user/-/sleep/date/2020-02-10.json | Internal server error
-```
+### Phase 1: Foundation ✅
+1. ✅ Set up project structure
+2. ✅ Implement OAuth authentication
+3. ✅ Create rate limiter
+4. ✅ Set up SQLite state management
 
-## Implementation Phases
+### Phase 2: Core Fetching ✅
+1. ✅ Implement base API client with rate limiting
+2. ✅ Add retry logic and error handling
+3. ✅ Create endpoint handlers for key data types
+4. ✅ Test with endpoints
 
-### Phase 1: Foundation
-1. Set up project structure
-2. Implement OAuth authentication
-3. Create basic rate limiter
-4. Set up file-based state management
+### Phase 3: Comprehensive Coverage ✅
+1. ✅ Implement all endpoint handlers (except intraday)
+2. ✅ Add date range pagination
+3. ✅ Test resumability (stop/start scenarios)
+4. ✅ Handle edge cases (token expiration auto-recovery)
 
-### Phase 2: Core Fetching
-1. Implement base API client with rate limiting
-2. Add retry logic and error handling
-3. Create endpoint handlers for key data types
-4. Test with a few endpoints
+### Phase 4: Polish ✅
+1. ✅ Error logging to SQLite
+2. ✅ User-friendly CLI
+3. ✅ Progress reporting with checkmarks
+4. ✅ Documentation (README.md, PLAN.md)
+5. ✅ Test suite with pytest
 
-### Phase 3: Comprehensive Coverage
-1. Implement all endpoint handlers
-2. Add date range pagination
-3. Test resumability (stop/start scenarios)
-4. Handle edge cases
-
-### Phase 4: Polish
-1. Add logging
-2. Create user-friendly CLI
-3. Add progress reporting
-4. Documentation
-
-## Usage Flow
+## Usage Flow ✅
 ```bash
 # First run - authenticate
-python main.py --authenticate
+uv run python main.py authenticate
 
-# Start data extraction
-python main.py --fetch-all
+# Download all data (default: 2015-01-01 to today)
+uv run python main.py download
 
-# Script can be stopped anytime (Ctrl+C)
-# Resume later
-python main.py --fetch-all --resume
+# Download custom date range
+uv run python main.py download --start-date 2020-01-01 --end-date 2024-12-31
 
-# Fetch specific data type
-python main.py --fetch activity --start-date 2020-01-01
+# Check status
+uv run python main.py status
+
+# Script can be stopped anytime (Ctrl+C) and resumed by running the same command
 ```
 
 ## Key Considerations
@@ -248,9 +246,12 @@ For a user with 3 years of data:
 **Total: ~3,362 requests minimum**
 At 150 requests/hour: ~22.5 hours of runtime (can be spread over days)
 
-## Success Criteria
-- All available data types fetched
-- Can stop/resume without data loss
-- Handles rate limits gracefully
-- Data organized and accessible
-- Logs all errors for review
+## Success Criteria ✅
+- ✅ All available data types fetched (except intraday and ECG)
+- ✅ Can stop/resume without data loss
+- ✅ Handles rate limits gracefully with automatic waiting
+- ✅ Data organized and accessible in SQLite database
+- ✅ Logs all errors to database for review
+- ✅ Automatic token refresh with re-authentication on expiration
+- ✅ Comprehensive test suite
+- ✅ Human-readable progress messages

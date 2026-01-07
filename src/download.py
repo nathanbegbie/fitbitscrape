@@ -10,6 +10,7 @@ from .endpoints.body import (
     fetch_body_goals,
     fetch_body_weight_time_series,
 )
+from .endpoints.glucose import fetch_blood_glucose_logs
 from .endpoints.health_metrics import (
     fetch_breathing_rate,
     fetch_cardio_fitness_score,
@@ -20,7 +21,8 @@ from .endpoints.health_metrics import (
 from .endpoints.heart import fetch_heart_rate_time_series, fetch_hrv_data
 from .endpoints.nutrition import fetch_food_logs, fetch_nutrition_goals, fetch_water_logs
 from .endpoints.profile import fetch_devices, fetch_profile
-from .endpoints.sleep import fetch_sleep_logs
+from .endpoints.sleep import fetch_sleep_goal, fetch_sleep_logs
+from .endpoints.social import fetch_badges, fetch_friends
 from .fetcher import FitbitFetcher
 
 
@@ -56,6 +58,8 @@ class DownloadOrchestrator:
             self._download_body()
             self._download_nutrition()
             self._download_health_metrics()
+            self._download_glucose()
+            self._download_social()
         except TokenRefreshError:
             # Token expired, trigger re-authentication
             print("\n⚠ Token expired. Re-authentication required.")
@@ -74,6 +78,8 @@ class DownloadOrchestrator:
             self._download_body()
             self._download_nutrition()
             self._download_health_metrics()
+            self._download_glucose()
+            self._download_social()
 
         # Final summary
         print()
@@ -113,6 +119,9 @@ class DownloadOrchestrator:
         print("SLEEP DATA")
         print("=" * 60)
         fetch_sleep_logs(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- Sleep Goal ---")
+        fetch_sleep_goal(self.fetcher)
 
     def _download_heart(self) -> None:
         """Download heart rate data."""
@@ -177,6 +186,25 @@ class DownloadOrchestrator:
 
         print("\n--- Cardio Fitness Score ---")
         fetch_cardio_fitness_score(self.fetcher, self.start_date, self.end_date)
+
+    def _download_glucose(self) -> None:
+        """Download blood glucose data."""
+        print("\n" + "=" * 60)
+        print("BLOOD GLUCOSE DATA")
+        print("=" * 60)
+        fetch_blood_glucose_logs(self.fetcher, self.start_date, self.end_date)
+
+    def _download_social(self) -> None:
+        """Download social data and achievements."""
+        print("\n" + "=" * 60)
+        print("SOCIAL & ACHIEVEMENTS DATA")
+        print("=" * 60)
+
+        print("\n--- Badges ---")
+        fetch_badges(self.fetcher)
+
+        print("\n--- Friends ---")
+        fetch_friends(self.fetcher)
 
 
 def download_all_data(

@@ -144,6 +144,26 @@ class StateManager:
                 )
             """)
 
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS glucose_data (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT NOT NULL,
+                    data_json TEXT NOT NULL,
+                    fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(date)
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS social_data (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    data_type TEXT NOT NULL,
+                    data_json TEXT NOT NULL,
+                    fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(data_type)
+                )
+            """)
+
             conn.commit()
 
     def is_completed(
@@ -411,5 +431,53 @@ class StateManager:
                 VALUES (?, ?)
                 """,
                 (date, json.dumps(data)),
+            )
+            conn.commit()
+
+    def save_sleep_goal(self, data: dict) -> None:
+        """Save sleep goal."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO profile_data (data_type, data_json)
+                VALUES ('sleep_goal', ?)
+                """,
+                (json.dumps(data),),
+            )
+            conn.commit()
+
+    def save_glucose_data(self, date: str, data: dict) -> None:
+        """Save blood glucose data."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO glucose_data (date, data_json)
+                VALUES (?, ?)
+                """,
+                (date, json.dumps(data)),
+            )
+            conn.commit()
+
+    def save_badges(self, data: dict) -> None:
+        """Save badges and achievements."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO social_data (data_type, data_json)
+                VALUES ('badges', ?)
+                """,
+                (json.dumps(data),),
+            )
+            conn.commit()
+
+    def save_friends(self, data: dict) -> None:
+        """Save friends list."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO social_data (data_type, data_json)
+                VALUES ('friends', ?)
+                """,
+                (json.dumps(data),),
             )
             conn.commit()

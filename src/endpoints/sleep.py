@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from ..fetcher import FitbitFetcher
-from ..utils import get_date_ranges
+from ..utils import get_date_ranges, log
 
 
 def fetch_sleep_logs(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
@@ -20,16 +20,16 @@ def fetch_sleep_logs(fetcher: FitbitFetcher, start_date: str, end_date: str) -> 
 
     for range_start, range_end in date_ranges:
         if fetcher.state.is_completed("sleep", None, range_start, range_end):
-            print(f"✓ Sleep logs {range_start} to {range_end} already fetched")
+            log(f"✓ Sleep logs {range_start} to {range_end} already fetched")
             continue
 
-        print(f"Fetching sleep logs {range_start} to {range_end}...")
+        log(f"Fetching sleep logs {range_start} to {range_end}...")
 
         success = fetcher.fetch_and_save_sleep(range_start, range_end)
 
         if success:
             fetcher.state.mark_completed("sleep", None, range_start, range_end)
-            print(f"✓ Sleep logs {range_start} to {range_end} fetched")
+            log(f"✓ Sleep logs {range_start} to {range_end} fetched")
 
 
 def fetch_all_sleep_data(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
@@ -55,10 +55,10 @@ def fetch_sleep_goal(fetcher: FitbitFetcher) -> None:
         fetcher: FitbitFetcher instance
     """
     if fetcher.state.is_completed("sleep", "goal"):
-        print("✓ Sleep goal already fetched")
+        log("✓ Sleep goal already fetched")
         return
 
-    print("Fetching sleep goal...")
+    log("Fetching sleep goal...")
 
     endpoint = "/user/-/sleep/goal.json"
     data = fetcher._make_request(endpoint)
@@ -66,6 +66,6 @@ def fetch_sleep_goal(fetcher: FitbitFetcher) -> None:
     if data:
         fetcher.state.save_sleep_goal(data)
         fetcher.state.mark_completed("sleep", "goal")
-        print("✓ Saved sleep goal")
+        log("✓ Saved sleep goal")
     else:
-        print("✗ Failed to fetch sleep goal")
+        log("✗ Failed to fetch sleep goal")

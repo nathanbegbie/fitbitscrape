@@ -3,6 +3,17 @@
 from datetime import datetime, timedelta
 
 
+def log(message: str) -> None:
+    """
+    Print a timestamped log message.
+
+    Args:
+        message: The message to log
+    """
+    timestamp = datetime.now().strftime("[%d/%m %H:%M:%S]")
+    print(f"{timestamp} {message}")
+
+
 def get_date_ranges(start_date: str, end_date: str, chunk_days: int = 90) -> list[tuple[str, str]]:
     """
     Split a date range into chunks for pagination.

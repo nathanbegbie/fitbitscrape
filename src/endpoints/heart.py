@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from ..fetcher import FitbitFetcher
-from ..utils import get_date_ranges
+from ..utils import get_date_ranges, log
 
 
 def fetch_heart_rate_time_series(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
@@ -19,16 +19,16 @@ def fetch_heart_rate_time_series(fetcher: FitbitFetcher, start_date: str, end_da
 
     for range_start, range_end in date_ranges:
         if fetcher.state.is_completed("heart", None, range_start, range_end):
-            print(f"✓ Heart rate {range_start} to {range_end} already fetched")
+            log(f"✓ Heart rate {range_start} to {range_end} already fetched")
             continue
 
-        print(f"Fetching heart rate {range_start} to {range_end}...")
+        log(f"Fetching heart rate {range_start} to {range_end}...")
 
         success = fetcher.fetch_and_save_heart(range_start, range_end)
 
         if success:
             fetcher.state.mark_completed("heart", None, range_start, range_end)
-            print(f"✓ Heart rate {range_start} to {range_end} fetched")
+            log(f"✓ Heart rate {range_start} to {range_end} fetched")
 
 
 def fetch_all_heart_data(
@@ -52,7 +52,7 @@ def fetch_all_heart_data(
     fetch_heart_rate_time_series(fetcher, start_date, end_date)
 
     if include_intraday:
-        print("\n⚠️  Intraday heart data fetching not yet implemented")
+        log("\n⚠️  Intraday heart data fetching not yet implemented")
 
 
 def fetch_hrv_data(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
@@ -74,11 +74,11 @@ def fetch_hrv_data(fetcher: FitbitFetcher, start_date: str, end_date: str) -> No
         date_str = current.strftime("%Y-%m-%d")
 
         if fetcher.state.is_completed("heart", "hrv", date_str, date_str):
-            print(f"✓ HRV {date_str} already fetched")
+            log(f"✓ HRV {date_str} already fetched")
             current += timedelta(days=1)
             continue
 
-        print(f"Fetching HRV {date_str}...")
+        log(f"Fetching HRV {date_str}...")
 
         endpoint = f"/user/-/hrv/date/{date_str}.json"
         data = fetcher._make_request(endpoint)
@@ -86,8 +86,8 @@ def fetch_hrv_data(fetcher: FitbitFetcher, start_date: str, end_date: str) -> No
         if data:
             fetcher.state.save_hrv_data(date_str, data)
             fetcher.state.mark_completed("heart", "hrv", date_str, date_str)
-            print(f"✓ Saved HRV for {date_str}")
+            log(f"✓ Saved HRV for {date_str}")
         else:
-            print(f"✗ Failed to fetch HRV for {date_str}")
+            log(f"✗ Failed to fetch HRV for {date_str}")
 
         current += timedelta(days=1)

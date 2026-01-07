@@ -2,6 +2,8 @@
 
 from datetime import datetime, timedelta
 
+from ..utils import log
+
 
 def fetch_blood_glucose_logs(fetcher, start_date: str, end_date: str) -> None:
     """
@@ -20,11 +22,11 @@ def fetch_blood_glucose_logs(fetcher, start_date: str, end_date: str) -> None:
         date_str = current.strftime("%Y-%m-%d")
 
         if fetcher.state.is_completed("glucose", "logs", date_str, date_str):
-            print(f"✓ Blood glucose {date_str} already fetched")
+            log(f"✓ Blood glucose {date_str} already fetched")
             current += timedelta(days=1)
             continue
 
-        print(f"Fetching blood glucose {date_str}...")
+        log(f"Fetching blood glucose {date_str}...")
 
         endpoint = f"/user/-/glucose/date/{date_str}.json"
         data = fetcher._make_request(endpoint)
@@ -32,8 +34,8 @@ def fetch_blood_glucose_logs(fetcher, start_date: str, end_date: str) -> None:
         if data:
             fetcher.state.save_glucose_data(date_str, data)
             fetcher.state.mark_completed("glucose", "logs", date_str, date_str)
-            print(f"✓ Saved blood glucose for {date_str}")
+            log(f"✓ Saved blood glucose for {date_str}")
         else:
-            print(f"✗ Failed to fetch blood glucose for {date_str}")
+            log(f"✗ Failed to fetch blood glucose for {date_str}")
 
         current += timedelta(days=1)

@@ -2,6 +2,8 @@
 
 from datetime import datetime, timedelta
 
+from ..utils import log
+
 
 def fetch_spo2_data(fetcher, start_date: str, end_date: str) -> None:
     """
@@ -20,11 +22,11 @@ def fetch_spo2_data(fetcher, start_date: str, end_date: str) -> None:
         date_str = current.strftime("%Y-%m-%d")
 
         if fetcher.state.is_completed("health", "spo2", date_str, date_str):
-            print(f"✓ SpO2 {date_str} already fetched")
+            log(f"✓ SpO2 {date_str} already fetched")
             current += timedelta(days=1)
             continue
 
-        print(f"Fetching SpO2 {date_str}...")
+        log(f"Fetching SpO2 {date_str}...")
 
         endpoint = f"/user/-/spo2/date/{date_str}.json"
         data = fetcher._make_request(endpoint)
@@ -32,9 +34,9 @@ def fetch_spo2_data(fetcher, start_date: str, end_date: str) -> None:
         if data:
             fetcher.state.save_health_metric("spo2", date_str, data)
             fetcher.state.mark_completed("health", "spo2", date_str, date_str)
-            print(f"✓ Saved SpO2 for {date_str}")
+            log(f"✓ Saved SpO2 for {date_str}")
         else:
-            print(f"✗ Failed to fetch SpO2 for {date_str}")
+            log(f"✗ Failed to fetch SpO2 for {date_str}")
 
         current += timedelta(days=1)
 
@@ -56,11 +58,11 @@ def fetch_breathing_rate(fetcher, start_date: str, end_date: str) -> None:
         date_str = current.strftime("%Y-%m-%d")
 
         if fetcher.state.is_completed("health", "breathing_rate", date_str, date_str):
-            print(f"✓ Breathing rate {date_str} already fetched")
+            log(f"✓ Breathing rate {date_str} already fetched")
             current += timedelta(days=1)
             continue
 
-        print(f"Fetching breathing rate {date_str}...")
+        log(f"Fetching breathing rate {date_str}...")
 
         endpoint = f"/user/-/br/date/{date_str}.json"
         data = fetcher._make_request(endpoint)
@@ -68,9 +70,9 @@ def fetch_breathing_rate(fetcher, start_date: str, end_date: str) -> None:
         if data:
             fetcher.state.save_health_metric("breathing_rate", date_str, data)
             fetcher.state.mark_completed("health", "breathing_rate", date_str, date_str)
-            print(f"✓ Saved breathing rate for {date_str}")
+            log(f"✓ Saved breathing rate for {date_str}")
         else:
-            print(f"✗ Failed to fetch breathing rate for {date_str}")
+            log(f"✗ Failed to fetch breathing rate for {date_str}")
 
         current += timedelta(days=1)
 
@@ -92,11 +94,11 @@ def fetch_temperature_skin(fetcher, start_date: str, end_date: str) -> None:
         date_str = current.strftime("%Y-%m-%d")
 
         if fetcher.state.is_completed("health", "temp_skin", date_str, date_str):
-            print(f"✓ Skin temperature {date_str} already fetched")
+            log(f"✓ Skin temperature {date_str} already fetched")
             current += timedelta(days=1)
             continue
 
-        print(f"Fetching skin temperature {date_str}...")
+        log(f"Fetching skin temperature {date_str}...")
 
         endpoint = f"/user/-/temp/skin/date/{date_str}.json"
         data = fetcher._make_request(endpoint)
@@ -104,9 +106,9 @@ def fetch_temperature_skin(fetcher, start_date: str, end_date: str) -> None:
         if data:
             fetcher.state.save_health_metric("temp_skin", date_str, data)
             fetcher.state.mark_completed("health", "temp_skin", date_str, date_str)
-            print(f"✓ Saved skin temperature for {date_str}")
+            log(f"✓ Saved skin temperature for {date_str}")
         else:
-            print(f"✗ Failed to fetch skin temperature for {date_str}")
+            log(f"✗ Failed to fetch skin temperature for {date_str}")
 
         current += timedelta(days=1)
 
@@ -128,11 +130,11 @@ def fetch_temperature_core(fetcher, start_date: str, end_date: str) -> None:
         date_str = current.strftime("%Y-%m-%d")
 
         if fetcher.state.is_completed("health", "temp_core", date_str, date_str):
-            print(f"✓ Core temperature {date_str} already fetched")
+            log(f"✓ Core temperature {date_str} already fetched")
             current += timedelta(days=1)
             continue
 
-        print(f"Fetching core temperature {date_str}...")
+        log(f"Fetching core temperature {date_str}...")
 
         endpoint = f"/user/-/temp/core/date/{date_str}.json"
         data = fetcher._make_request(endpoint)
@@ -140,9 +142,9 @@ def fetch_temperature_core(fetcher, start_date: str, end_date: str) -> None:
         if data:
             fetcher.state.save_health_metric("temp_core", date_str, data)
             fetcher.state.mark_completed("health", "temp_core", date_str, date_str)
-            print(f"✓ Saved core temperature for {date_str}")
+            log(f"✓ Saved core temperature for {date_str}")
         else:
-            print(f"✗ Failed to fetch core temperature for {date_str}")
+            log(f"✗ Failed to fetch core temperature for {date_str}")
 
         current += timedelta(days=1)
 
@@ -164,11 +166,11 @@ def fetch_cardio_fitness_score(fetcher, start_date: str, end_date: str) -> None:
         date_str = current.strftime("%Y-%m-%d")
 
         if fetcher.state.is_completed("health", "cardio_fitness", date_str, date_str):
-            print(f"✓ Cardio fitness {date_str} already fetched")
+            log(f"✓ Cardio fitness {date_str} already fetched")
             current += timedelta(days=1)
             continue
 
-        print(f"Fetching cardio fitness {date_str}...")
+        log(f"Fetching cardio fitness {date_str}...")
 
         endpoint = f"/user/-/cardioscore/date/{date_str}.json"
         data = fetcher._make_request(endpoint)
@@ -176,8 +178,8 @@ def fetch_cardio_fitness_score(fetcher, start_date: str, end_date: str) -> None:
         if data:
             fetcher.state.save_health_metric("cardio_fitness", date_str, data)
             fetcher.state.mark_completed("health", "cardio_fitness", date_str, date_str)
-            print(f"✓ Saved cardio fitness for {date_str}")
+            log(f"✓ Saved cardio fitness for {date_str}")
         else:
-            print(f"✗ Failed to fetch cardio fitness for {date_str}")
+            log(f"✗ Failed to fetch cardio fitness for {date_str}")
 
         current += timedelta(days=1)

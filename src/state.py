@@ -89,6 +89,61 @@ class StateManager:
                 )
             """)
 
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS body_data (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    resource TEXT NOT NULL,
+                    date TEXT NOT NULL,
+                    value REAL,
+                    data_json TEXT,
+                    fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(resource, date)
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS nutrition_data (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    data_type TEXT NOT NULL,
+                    date TEXT NOT NULL,
+                    data_json TEXT NOT NULL,
+                    fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(data_type, date)
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS health_metrics (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    metric_type TEXT NOT NULL,
+                    date TEXT NOT NULL,
+                    data_json TEXT NOT NULL,
+                    fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(metric_type, date)
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS activity_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT NOT NULL,
+                    log_id INTEGER,
+                    data_json TEXT NOT NULL,
+                    fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(log_id)
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS hrv_data (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT NOT NULL,
+                    data_json TEXT NOT NULL,
+                    fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(date)
+                )
+            """)
+
             conn.commit()
 
     def is_completed(
@@ -266,3 +321,95 @@ class StateManager:
     def get_db_path(self) -> str:
         """Get the database file path."""
         return self.db_path
+
+    def save_body_data(self, resource: str, data: dict) -> None:
+        """Save body metrics data (weight, fat, BMI)."""
+        with sqlite3.connect(self.db_path) as conn:
+            key = f"body-{resource}"
+            if key in data:
+                for entry in data[key]:
+                    date = entry.get("dateTime") or entry.get("date")
+                    value = entry.get("value")
+                    conn.execute(
+                        """
+                        INSERT OR REPLACE INTO body_data (resource, date, value, data_json)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (resource, date, value, json.dumps(entry)),
+                    )
+            conn.commit()
+
+    def save_body_goals(self, data: dict) -> None:
+        """Save body goals."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO profile_data (data_type, data_json)
+                VALUES ('body_goals', ?)
+                """,
+                (json.dumps(data),),
+            )
+            conn.commit()
+
+    def save_nutrition_data(self, data_type: str, date: str, data: dict) -> None:
+        """Save nutrition data (food logs, water logs)."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO nutrition_data (data_type, date, data_json)
+                VALUES (?, ?, ?)
+                """,
+                (data_type, date, json.dumps(data)),
+            )
+            conn.commit()
+
+    def save_nutrition_goals(self, data: dict) -> None:
+        """Save nutrition goals."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO profile_data (data_type, data_json)
+                VALUES ('nutrition_goals', ?)
+                """,
+                (json.dumps(data),),
+            )
+            conn.commit()
+
+    def save_health_metric(self, metric_type: str, date: str, data: dict) -> None:
+        """Save health metrics (SpO2, breathing rate, temperature, etc.)."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO health_metrics (metric_type, date, data_json)
+                VALUES (?, ?, ?)
+                """,
+                (metric_type, date, json.dumps(data)),
+            )
+            conn.commit()
+
+    def save_activity_logs(self, date: str, data: dict) -> None:
+        """Save activity logs (exercises/workouts)."""
+        with sqlite3.connect(self.db_path) as conn:
+            if "activities" in data:
+                for activity in data["activities"]:
+                    log_id = activity.get("logId")
+                    conn.execute(
+                        """
+                        INSERT OR REPLACE INTO activity_logs (date, log_id, data_json)
+                        VALUES (?, ?, ?)
+                        """,
+                        (date, log_id, json.dumps(activity)),
+                    )
+            conn.commit()
+
+    def save_hrv_data(self, date: str, data: dict) -> None:
+        """Save Heart Rate Variability data."""
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO hrv_data (date, data_json)
+                VALUES (?, ?)
+                """,
+                (date, json.dumps(data)),
+            )
+            conn.commit()

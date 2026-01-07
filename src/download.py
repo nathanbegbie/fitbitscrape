@@ -3,8 +3,22 @@
 from datetime import datetime
 
 from .auth import TokenRefreshError, run_interactive_auth
-from .endpoints.activity import ACTIVITY_RESOURCES, fetch_activity_time_series
-from .endpoints.heart import fetch_heart_rate_time_series
+from .endpoints.activity import ACTIVITY_RESOURCES, fetch_activity_logs, fetch_activity_time_series
+from .endpoints.body import (
+    fetch_body_bmi_time_series,
+    fetch_body_fat_time_series,
+    fetch_body_goals,
+    fetch_body_weight_time_series,
+)
+from .endpoints.health_metrics import (
+    fetch_breathing_rate,
+    fetch_cardio_fitness_score,
+    fetch_spo2_data,
+    fetch_temperature_core,
+    fetch_temperature_skin,
+)
+from .endpoints.heart import fetch_heart_rate_time_series, fetch_hrv_data
+from .endpoints.nutrition import fetch_food_logs, fetch_nutrition_goals, fetch_water_logs
 from .endpoints.profile import fetch_devices, fetch_profile
 from .endpoints.sleep import fetch_sleep_logs
 from .fetcher import FitbitFetcher
@@ -39,6 +53,9 @@ class DownloadOrchestrator:
             self._download_activity()
             self._download_sleep()
             self._download_heart()
+            self._download_body()
+            self._download_nutrition()
+            self._download_health_metrics()
         except TokenRefreshError:
             # Token expired, trigger re-authentication
             print("\n⚠ Token expired. Re-authentication required.")
@@ -54,6 +71,9 @@ class DownloadOrchestrator:
             self._download_activity()
             self._download_sleep()
             self._download_heart()
+            self._download_body()
+            self._download_nutrition()
+            self._download_health_metrics()
 
         # Final summary
         print()
@@ -84,6 +104,9 @@ class DownloadOrchestrator:
             print(f"\n--- {resource.upper()} ---")
             fetch_activity_time_series(self.fetcher, resource, self.start_date, self.end_date)
 
+        print("\n--- ACTIVITY LOGS (EXERCISES/WORKOUTS) ---")
+        fetch_activity_logs(self.fetcher, self.start_date, self.end_date)
+
     def _download_sleep(self) -> None:
         """Download sleep data."""
         print("\n" + "=" * 60)
@@ -97,6 +120,63 @@ class DownloadOrchestrator:
         print("HEART RATE DATA")
         print("=" * 60)
         fetch_heart_rate_time_series(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- HRV (Heart Rate Variability) ---")
+        fetch_hrv_data(self.fetcher, self.start_date, self.end_date)
+
+    def _download_body(self) -> None:
+        """Download body metrics data."""
+        print("\n" + "=" * 60)
+        print("BODY METRICS DATA")
+        print("=" * 60)
+
+        print("\n--- Weight ---")
+        fetch_body_weight_time_series(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- Body Fat ---")
+        fetch_body_fat_time_series(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- BMI ---")
+        fetch_body_bmi_time_series(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- Body Goals ---")
+        fetch_body_goals(self.fetcher)
+
+    def _download_nutrition(self) -> None:
+        """Download nutrition data."""
+        print("\n" + "=" * 60)
+        print("NUTRITION DATA")
+        print("=" * 60)
+
+        print("\n--- Food Logs ---")
+        fetch_food_logs(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- Water Logs ---")
+        fetch_water_logs(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- Nutrition Goals ---")
+        fetch_nutrition_goals(self.fetcher)
+
+    def _download_health_metrics(self) -> None:
+        """Download health metrics data."""
+        print("\n" + "=" * 60)
+        print("HEALTH METRICS DATA")
+        print("=" * 60)
+
+        print("\n--- SpO2 (Blood Oxygen) ---")
+        fetch_spo2_data(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- Breathing Rate ---")
+        fetch_breathing_rate(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- Skin Temperature ---")
+        fetch_temperature_skin(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- Core Temperature ---")
+        fetch_temperature_core(self.fetcher, self.start_date, self.end_date)
+
+        print("\n--- Cardio Fitness Score ---")
+        fetch_cardio_fitness_score(self.fetcher, self.start_date, self.end_date)
 
 
 def download_all_data(

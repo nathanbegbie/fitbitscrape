@@ -78,3 +78,41 @@ def fetch_all_activity_data(
     # TODO: Implement intraday data fetching
     if include_intraday:
         print("\n⚠️  Intraday data fetching not yet implemented")
+
+
+def fetch_activity_logs(fetcher: FitbitFetcher, start_date: str, end_date: str) -> None:
+    """
+    Fetch activity logs (exercises/workouts) for date range.
+
+    Args:
+        fetcher: FitbitFetcher instance
+        start_date: Start date (YYYY-MM-DD)
+        end_date: End date (YYYY-MM-DD)
+    """
+    from datetime import timedelta
+
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+
+    current = start
+    while current <= end:
+        date_str = current.strftime("%Y-%m-%d")
+
+        if fetcher.state.is_completed("activity", "logs", date_str, date_str):
+            print(f"✓ Activity logs {date_str} already fetched")
+            current += timedelta(days=1)
+            continue
+
+        print(f"Fetching activity logs {date_str}...")
+
+        endpoint = f"/user/-/activities/list.json?afterDate={date_str}&sort=asc&offset=0&limit=100"
+        data = fetcher._make_request(endpoint)
+
+        if data:
+            fetcher.state.save_activity_logs(date_str, data)
+            fetcher.state.mark_completed("activity", "logs", date_str, date_str)
+            print(f"✓ Saved activity logs for {date_str}")
+        else:
+            print(f"✗ Failed to fetch activity logs for {date_str}")
+
+        current += timedelta(days=1)

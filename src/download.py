@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from .auth import TokenRefreshError, run_interactive_auth
 from .endpoints.activity import ACTIVITY_RESOURCES, fetch_activity_time_series
 from .endpoints.heart import fetch_heart_rate_time_series
 from .endpoints.profile import fetch_devices, fetch_profile
@@ -32,11 +33,27 @@ class DownloadOrchestrator:
         )
         print()
 
-        # Download in order of priority
-        self._download_profile()
-        self._download_activity()
-        self._download_sleep()
-        self._download_heart()
+        try:
+            # Download in order of priority
+            self._download_profile()
+            self._download_activity()
+            self._download_sleep()
+            self._download_heart()
+        except TokenRefreshError:
+            # Token expired, trigger re-authentication
+            print("\n⚠ Token expired. Re-authentication required.")
+            run_interactive_auth(self.fetcher.auth)
+
+            # Reinitialize fetcher with new tokens
+            self.fetcher.initialize()
+
+            print("\n✓ Re-authentication successful! Resuming download...\n")
+
+            # Resume download from where we left off
+            self._download_profile()
+            self._download_activity()
+            self._download_sleep()
+            self._download_heart()
 
         # Final summary
         print()

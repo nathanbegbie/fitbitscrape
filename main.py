@@ -3,7 +3,7 @@
 
 import click
 
-from src.auth import FitbitAuth
+from src.auth import FitbitAuth, run_interactive_auth
 from src.download import download_all_data
 from src.fetcher import FitbitFetcher
 
@@ -29,20 +29,8 @@ def authenticate():
         )
         return
 
-    # Get authorization URL
-    auth_url, state = auth.get_authorization_url()
-
-    click.echo("\n1. Visit this URL in your browser:")
-    click.echo(f"\n{auth_url}\n")
-    click.echo("2. Authorize the application")
-    click.echo("3. Copy the full redirect URL from your browser")
-    click.echo("   (It will look like: http://localhost:8080/?code=...)")
-
-    redirect_response = click.prompt("\nPaste the redirect URL here")
-
     try:
-        auth.fetch_token(redirect_response)
-        click.echo("\n✓ Authentication successful!")
+        run_interactive_auth(auth)
         click.echo("Tokens saved to .env file")
     except Exception as e:
         click.echo(f"\n✗ Authentication failed: {e}", err=True)

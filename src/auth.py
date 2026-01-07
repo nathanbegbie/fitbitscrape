@@ -10,6 +10,37 @@ from requests_oauthlib import OAuth2Session
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
+class TokenRefreshError(Exception):
+    """Raised when token refresh fails and re-authentication is required."""
+
+    pass
+
+
+def run_interactive_auth(auth: "FitbitAuth") -> None:
+    """
+    Run interactive authentication flow.
+
+    Args:
+        auth: FitbitAuth instance
+
+    Raises:
+        Exception: If authentication fails
+    """
+    # Get authorization URL
+    auth_url, state = auth.get_authorization_url()
+
+    print("\n1. Visit this URL in your browser:")
+    print(f"\n{auth_url}\n")
+    print("2. Authorize the application")
+    print("3. Copy the full redirect URL from your browser")
+    print("   (It will look like: http://localhost:8080/?code=...)")
+
+    redirect_response = input("\nPaste the redirect URL here: ")
+
+    auth.fetch_token(redirect_response)
+    print("\n✓ Authentication successful!")
+
+
 class FitbitAuth:
     """
     Manages OAuth 2.0 authentication with Fitbit.
@@ -109,21 +140,27 @@ class FitbitAuth:
 
         Returns:
             New token dictionary
+
+        Raises:
+            ValueError: If refresh token is invalid or expired
         """
         if not self.refresh_token:
             raise ValueError("No refresh token available")
 
         oauth = OAuth2Session(self.client_id, token={"refresh_token": self.refresh_token})
 
-        token = oauth.refresh_token(
-            self.TOKEN_URL,
-            refresh_token=self.refresh_token,
-            client_id=self.client_id,
-            client_secret=self.client_secret,
-        )
+        try:
+            token = oauth.refresh_token(
+                self.TOKEN_URL,
+                refresh_token=self.refresh_token,
+                client_id=self.client_id,
+                client_secret=self.client_secret,
+            )
 
-        self._save_tokens(token)
-        return token
+            self._save_tokens(token)
+            return token
+        except Exception as e:
+            raise TokenRefreshError("Token refresh failed. Re-authentication required.") from e
 
     def get_session(self) -> OAuth2Session:
         """
